@@ -1,6 +1,18 @@
 # devops20
 DEVOPS-20 homework repository
 
+
+## 2.1 Системы контроля версий
+Будут игнорироваться 
+- содержимое директорий .terraform, где бы эти директории не находились.
+- файлы с расширением .tfstate или имеющие .tfstate. в названиии
+- файлы crash.log или начинающиеся на crash. и с расширением .log
+- файлы с расширениями .tfvars или .tfvars.json
+- файлы override.tf, override.tf.json или с именами, заканчивающимися на _override.tf или _override.tf.json
+- файлы .terrafromrc
+- файлы terraform.rc
+
+
 ## 1.1. Введение в DevOps — Вячеслав Медведев
 
 Ссылка на скриншоты: https://disk.yandex.ru/d/HdwyvwvEVvwR9A
