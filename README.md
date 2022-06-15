@@ -1,6 +1,8 @@
 # devops20
 DEVOPS-20 homework repository
 
+Fix branch
+
 ## 1.1. Введение в DevOps — Вячеслав Медведев
 
 Ссылка на скриншоты: https://disk.yandex.ru/d/HdwyvwvEVvwR9A
