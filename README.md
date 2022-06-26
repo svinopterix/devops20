@@ -5,13 +5,16 @@ DEVOPS-20 homework repository
 
 1. Системный вызов chdir
 2. Судя по всему, тут /usr/share/misc/magic.mgc
-vagrant@vagrant:~$ grep "misc/magic.mgc" bash.strace tty0.strace sda1.strace
-bash.strace:openat(AT_FDCWD, "/usr/share/misc/magic.mgc", O_RDONLY) = 3
-tty0.strace:openat(AT_FDCWD, "/usr/share/misc/magic.mgc", O_RDONLY) = 3
-sda1.strace:openat(AT_FDCWD, "/usr/share/misc/magic.mgc", O_RDONLY) = 3
+
+       vagrant@vagrant:~$ grep "misc/magic.mgc" bash.strace tty0.strace sda1.strace
+       bash.strace:openat(AT_FDCWD, "/usr/share/misc/magic.mgc", O_RDONLY) = 3
+       tty0.strace:openat(AT_FDCWD, "/usr/share/misc/magic.mgc", O_RDONLY) = 3
+       sda1.strace:openat(AT_FDCWD, "/usr/share/misc/magic.mgc", O_RDONLY) = 3
 3. Можно с помощью lsof найти дескриптор открытого файла и PID процесса, который его открыл
-vagrant@vagrant:~$ lsof | grep bigfile
-tail      216079                         vagrant    3r      REG              253,0 2780567790    1311516 /home/vagrant/bigfile (deleted)
+
+
+       vagrant@vagrant:~$ lsof | grep bigfile
+       tail      216079                         vagrant    3r      REG              253,0 2780567790    1311516 /home/vagrant/bigfile (deleted)
 
 PID: 216079
 дескриптор: 3
@@ -22,27 +25,27 @@ echo "" > /proc/216079/fd/3
 
 4. Нет, зомби-процессы завершены, поэтому ресурсов системы не занимают.
 5.
-root@vagrant:~# opensnoop-bpfcc
-PID    COMM               FD ERR PATH
-647    irqbalance          6   0 /proc/interrupts
-647    irqbalance          6   0 /proc/stat
-647    irqbalance          6   0 /proc/irq/20/smp_affinity
-647    irqbalance          6   0 /proc/irq/0/smp_affinity
-647    irqbalance          6   0 /proc/irq/1/smp_affinity
-647    irqbalance          6   0 /proc/irq/8/smp_affinity
-647    irqbalance          6   0 /proc/irq/12/smp_affinity
-647    irqbalance          6   0 /proc/irq/14/smp_affinity
-647    irqbalance          6   0 /proc/irq/15/smp_affinity
-1244   vminfo              6   0 /var/run/utmp
-635    dbus-daemon        -1   2 /usr/local/share/dbus-1/system-services
-635    dbus-daemon        21   0 /usr/share/dbus-1/system-services
-635    dbus-daemon        -1   2 /lib/dbus-1/system-services
-635    dbus-daemon        21   0 /var/lib/snapd/dbus-1/system-services/
-1244   vminfo              6   0 /var/run/utmp
-635    dbus-daemon        -1   2 /usr/local/share/dbus-1/system-services
-635    dbus-daemon        21   0 /usr/share/dbus-1/system-services
-635    dbus-daemon        -1   2 /lib/dbus-1/system-services
-635    dbus-daemon        21   0 /var/lib/snapd/dbus-1/system-services/
+       root@vagrant:~# opensnoop-bpfcc
+       PID    COMM               FD ERR PATH
+       647    irqbalance          6   0 /proc/interrupts
+       647    irqbalance          6   0 /proc/stat
+       647    irqbalance          6   0 /proc/irq/20/smp_affinity
+       647    irqbalance          6   0 /proc/irq/0/smp_affinity
+       647    irqbalance          6   0 /proc/irq/1/smp_affinity
+       647    irqbalance          6   0 /proc/irq/8/smp_affinity
+       647    irqbalance          6   0 /proc/irq/12/smp_affinity
+       647    irqbalance          6   0 /proc/irq/14/smp_affinity
+       647    irqbalance          6   0 /proc/irq/15/smp_affinity
+       1244   vminfo              6   0 /var/run/utmp
+       635    dbus-daemon        -1   2 /usr/local/share/dbus-1/system-services
+       635    dbus-daemon        21   0 /usr/share/dbus-1/system-services
+       635    dbus-daemon        -1   2 /lib/dbus-1/system-services
+       635    dbus-daemon        21   0 /var/lib/snapd/dbus-1/system-services/
+       1244   vminfo              6   0 /var/run/utmp
+       635    dbus-daemon        -1   2 /usr/local/share/dbus-1/system-services
+       635    dbus-daemon        21   0 /usr/share/dbus-1/system-services
+       635    dbus-daemon        -1   2 /lib/dbus-1/system-services
+       635    dbus-daemon        21   0 /var/lib/snapd/dbus-1/system-services/
 
 6. Системный вызов uname
        Part of the utsname information is also accessible via
@@ -72,45 +75,46 @@ o pipefail - выдаёт ненулевой результат работы п�
 считает число строк, включающих some_string
 3. процесс c PID=1 initd
 Правда, название команды почему-то зависит от синтаксиса команды:
-root@vagrant:/proc/sys/kernel# ps p 1
-    PID TTY      STAT   TIME COMMAND
-      1 ?        Ss     0:08 /sbin/init
-root@vagrant:/proc/sys/kernel# ps -p 1
-    PID TTY          TIME CMD
-      1 ?        00:00:08 systemd
-root@vagrant:/proc/sys/kernel#
+       root@vagrant:/proc/sys/kernel# ps p 1
+           PID TTY      STAT   TIME COMMAND
+             1 ?        Ss     0:08 /sbin/init
+       root@vagrant:/proc/sys/kernel# ps -p 1
+           PID TTY          TIME CMD
+             1 ?        00:00:08 systemd
 4. ls /some_dir 2>/dev/pts/1
-5. 
-root@vagrant:~# echo -e "1\n2\n3\nasdf" | sed s/[[:digit:]]*/D/ > out
-root@vagrant:~# cat out
-D
-D
-D
-Dasdf
-root@vagrant:~#
+5.  
+       root@vagrant:~# echo -e "1\n2\n3\nasdf" | sed s/[[:digit:]]*/D/ > out
+       root@vagrant:~# cat out
+       D
+       D
+       D
+       Dasdf
 6.Не пойму вопрос. Поставил графическую Убунту, запустил два терминала /dev/pts/0 и /dev/pts/1. Между ними так же передаются данные: echo "string" >/dev/ptsX
 
-7. Создаётся поток 5 и перенаправляется на 1 (стандартный вывод). При этом создаётся файловый дескриптор. Его видно в директории /proc/$$/fd ($$ - PID текущего процесса). Т.е. если вывести что-нибудь в этот 5-й дескриптор, то этот вывод будет перенаправлен на стандартный вывод, и мы увидим сточку на экране.
+7. Создаётся поток 5 и перенаправляется на 1 (стандартный вывод). При этом создаётся файловый дескриптор. 
+Его видно в директории 
+       /proc\/\$\$\/fd
+(\$\$ - PID текущего процесса). Т.е. если вывести что-нибудь в этот 5-й дескриптор, то этот вывод будет перенаправлен на стандартный вывод, и мы увидим сточку на экране.
 8.
-ls -la ~ /somedir 3>&1 1>&2 2>&3 | sed s/somedir/SOMEDIRRRRRRR/
-/home/vagrant:
-ls: cannot access '/SOMEDIRRRRRRR': No such file or directory
-total 100
-drwxr-xr-x 4 vagrant vagrant  4096 Jun 26 10:07 .
-drwxr-xr-x 3 root    root     4096 Jun  7 11:50 ..
--rw------- 1 vagrant vagrant   862 Jun 20 21:36 .bash_history
--rw-r--r-- 1 vagrant vagrant   220 Feb 25  2020 .bash_logout
-.....
+       ls -la ~ /somedir 3>&1 1>&2 2>&3 | sed s/somedir/SOMEDIRRRRRRR/
+       /home/vagrant:
+       ls: cannot access '/SOMEDIRRRRRRR': No such file or directory
+       total 100
+       drwxr-xr-x 4 vagrant vagrant  4096 Jun 26 10:07 .
+       drwxr-xr-x 3 root    root     4096 Jun  7 11:50 ..
+       -rw------- 1 vagrant vagrant   862 Jun 20 21:36 .bash_history
+       -rw-r--r-- 1 vagrant vagrant   220 Feb 25  2020 .bash_logout
+       .....
 9.Покажет переменные окружения текущего bash
 Можно посмотреть переменные окружения командой env.
 10. /proc/[pid]/cmdline - полная команда, запустившая процесс
 /proc/[pid]/exe - симлинк на исполняемый файл процесса
 11. Поддерживаются sse, sse2, sse4_1, sse4_2
 12. По умолчанию sshd не создаёт виртуальный терминал при исполнении команды. Можно задать опцию -t, тогда будет создавать.
-vagrant@vagrant:~$ ssh -t localhost 'tty'
-vagrant@localhost's password:
-/dev/pts/2
-Connection to localhost closed.
+       vagrant@vagrant:~$ ssh -t localhost 'tty'
+       vagrant@localhost's password:
+       /dev/pts/2
+       Connection to localhost closed.
 13. Получилось переключить vi на другой терминал. Потребовалось kernel.yama.ptrace_scope = 0 в /etc/sysctl.d/10-ptrace.conf и перегрузиться.
 14. tee читает stdin и пишет одновременно на stdout и в указанные файлы. Получается, что если делаем sudo smth > smth2, то smth2 выполняется под моим пользователем, а под root только smth. Т.е. в конструкции echo file > sudo tee file2 - tee file2 выполняется под root.
 
