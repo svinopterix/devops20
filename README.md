@@ -4,9 +4,24 @@ DEVOPS-20 homework repository
 ## 2.4 - Инструменты Git - Вячеслав Медведев
 
 1. aefead220 Update CHANGELOG.md
+
+       git log --oneline | grep aefea
 2. tag: v0.12.23
+<pre>
+ubuntu@primary:~/terraform$ git show 85024d3
+commit 85024d3100126de36331c6982bfaac02cdab9e76 (<b>tag: v0.12.23</b>)
+Author: tf-release-bot <terraform@hashicorp.com>
+Date:   Thu Mar 5 20:56:10 2020 +0000
+</pre>       
 3. 56cd7859e и 9ea88f22f
+<pre>
+ubuntu@primary:~/terraform$ git show b8d720
+commit b8d720f8340221f2146e4e4870bf2ee0bc48f2d5
+Merge: <b>56cd7859e 9ea88f22f</b>
+</pre>
 4.
+<pre>
+ubuntu@primary:~/terraform$ <b>git log v0.12.23..v0.12.24 --oneline</b>
 33ff1c03b (tag: v0.12.24) v0.12.24
 b14b74c49 [Website] vmc provider links
 3f235065b Update CHANGELOG.md
@@ -17,17 +32,29 @@ d5f9411f5 command: Fix bug when using terraform login on Windows
 4b6d06cc5 Update CHANGELOG.md
 dd01a3507 Update CHANGELOG.md
 225466bc3 Cleanup after v0.12.23 release
-5. 
-8c928e83589d90a031f811fae52a81be7153e82f
+</pre>
+5. 8c928e83589d90a031f811fae52a81be7153e82f
+Сначала нашёл все коммиты, где функция была добавлена или удалена:
+<pre>
+ubuntu@primary:~/terraform$ git log -S "func providerSource" --oneline
+5af1e6234 main: Honor explicit provider_installation CLI config when present
+8c928e835 main: Consult local directories as potential mirrors of providers
+</pre>
+А потом посмотрел с помощью git show <commit_id>, где её добавили
 
-6. 
+6. Сначала нашёл, в каком файле находится требуемая функция - она в plugins.go<br>
+<b>git log -S "func globalPluginDirs" -p</b><br>
+Потом с помощью команды <b>git log -L :globalPluginDirs:plugins.go</b> вывел диффы всех коммитов, изменяющих эту функцию.
+Ключ --oneline при этом не работает, поэтому пришлось руками копипастить хэши и их описания
+<pre>
 78b122055 Remove config.go and update things using its aliaseswho
 52dbf9483 keep .terraform.d/plugins for discovery
 41ab0aef7 Add missing OS_ARCH dir to global plugin paths
 66ebff90c move some more plugin search path logic to command
 8364383c3 Push plugin discovery down into command package
-
-7.
+</pre>
+7. Нашел все коммиты, где функция появляется или исчезает: <b>git log -S "func synchronizedWriters" -p</b><br>
+И посмотрел, кто автор коммита, в котором функция была добавлена.<br>
 Martin Atkins <mart@degeneration.co.uk>
 
 
