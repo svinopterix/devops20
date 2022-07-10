@@ -1,6 +1,110 @@
 # devops20
 DEVOPS-20 homework repository
 
+## 3.4 Операционные системы, лекция 2 - Вячеслав Медведев
+
+1.
+<pre>
+vagrant@vagrant:~$ cat /etc/systemd/system/node_exporter.service
+[Unit]
+Description=Node exporter
+
+[Service]
+EnvironmentFile=-/home/vagrant/node_exporter-1.3.1.linux-386/node_exporter_options
+ExecStart=/home/vagrant/node_exporter-1.3.1.linux-386/node_exporter $CLI_OPTIONS
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+</pre>
+2. Ну, например:
+CPU
+для всех CPU:
+<pre>
+node_cpu_seconds_total{cpu="0",mode="idle"}
+node_cpu_seconds_total{cpu="0",mode="iowait"}
+node_cpu_seconds_total{cpu="0",mode="system"}
+node_cpu_seconds_total{cpu="0",mode="user"}
+</pre>
+
+Mem
+<pre>
+node_memory_MemFree_bytes
+node_memory_SwapFree_bytes
+</pre>
+
+Disk
+<pre>
+node_disk_io_now
+node_filesystem_files_free
+</pre>
+
+Network
+<pre>
+node_network_receive_errs_total
+node_network_receive_bytes_total
+node_network_receive_packets_total
+node_network_transmit_errs_total
+node_network_transmit_bytes_total
+node_network_transmit_packets_total
+</pre>
+
+3. Приложил скриншот Netdata
+
+4. Осознаёт - Ubuntu говорит при загрузке, что работает на гипервизоре
+
+       [    0.000000] Hypervisor detected: KVM
+
+5. fs.nr_open = 1048576
+Максимальное число открытых файловых дескрипторов
+
+6. 
+<pre>
+root@vagrant:~# unshare -f --pid --mount-proc sleep 1h
+^Z
+[1]+  Stopped                 unshare -f --pid --mount-proc sleep 1h
+root@vagrant:~# bg
+[1]+ unshare -f --pid --mount-proc sleep 1h &
+root@vagrant:~# ps -ef | grep sleep
+root        1484    1401  0 14:59 pts/0    00:00:00 unshare -f --pid --mount-proc sleep 1h
+root        1485    1484  0 14:59 pts/0    00:00:00 sleep 1h
+root        1487    1401  0 14:59 pts/0    00:00:00 grep --color=auto sleep
+root@vagrant:~# nsenter -t 1485 --pid --mount
+root@vagrant:/# ps aux
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.0  0.0   5476   584 pts/0    S    14:59   0:00 sleep 1h
+root           2  0.0  0.2   7236  4080 pts/0    S    14:59   0:00 -bash
+root          13  0.0  0.1   8888  3368 pts/0    R+   14:59   0:00 ps aux
+</pre>
+
+7. Приведенная конструкция рекурсивно плодит процессы.
+Если я правильно понял, в systemd есть модуль контроля за ресурсам, в котором по умолчанию стоит ограничение: один unit не может породитьболее 33% процессов.
+<pre>
+vagrant@vagrant:/usr/lib/systemd/system/user-.slice.d$ cat /usr/lib/systemd/system/user-.slice.d/10-defaults.conf
+#  SPDX-License-Identifier: LGPL-2.1+
+#
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+
+[Unit]
+Description=User Slice of UID %j
+Documentation=man:user@.service(5)
+After=systemd-user-sessions.service
+StopWhenUnneeded=yes
+
+[Slice]
+TasksMax=33%
+</pre>
+
+Это ограничение срабатывает, о чём появляется сообщение в dmesg:
+
+       [   65.780326] cgroup: fork rejected by pids controller in /user.slice/user-1000.slice/session-1.scope
+
 ## 2.4 - Инструменты Git - Вячеслав Медведев
 
 1. aefead220 Update CHANGELOG.md
