@@ -1,6 +1,267 @@
 # devops20
 DEVOPS-20 homework repository
 
+## 3.5 Файловые системы - Вячеслав Медведев
+2. Нет, не могут, т.к. метаданные (в т.ч. владелец и права доступа) хранятся в inode, на который и будут ссылаться созданные жесткие ссылки.<br>
+
+4. 
+<pre>
+root@vagrant:~# lsblk
+NAME                      MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+loop0                       7:0    0 67.2M  1 loop /snap/lxd/21835
+loop1                       7:1    0 61.9M  1 loop /snap/core20/1328
+loop2                       7:2    0 43.6M  1 loop /snap/snapd/14978
+sda                         8:0    0   64G  0 disk
+├─sda1                      8:1    0    1M  0 part
+├─sda2                      8:2    0  1.5G  0 part /boot
+└─sda3                      8:3    0 62.5G  0 part
+  └─ubuntu--vg-ubuntu--lv 253:0    0 31.3G  0 lvm  /
+sdb                         8:16   0  2.5G  0 disk
+sdc                         8:32   0  2.5G  0 disk
+
+
+Command (m for help): p
+Disk /dev/sdb: 2.51 GiB, 2684354560 bytes, 5242880 sectors
+Disk model: VBOX HARDDISK
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0xb99e3285
+
+Device     Boot   Start     End Sectors  Size Id Type
+/dev/sdb1          2048 4196351 4194304    2G 83 Linux
+/dev/sdb2       4196352 5242879 1046528  511M 83 Linux
+</pre>
+5.
+<pre>
+sfdisk /dev/sdb --dump > sdb.dump
+sfdisk /dev/sdc < sdb.dump
+
+root@vagrant:~# lsblk
+NAME                      MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+loop0                       7:0    0 67.2M  1 loop /snap/lxd/21835
+loop1                       7:1    0 61.9M  1 loop /snap/core20/1328
+loop2                       7:2    0 43.6M  1 loop /snap/snapd/14978
+loop3                       7:3    0 61.9M  1 loop /snap/core20/1518
+loop4                       7:4    0   47M  1 loop /snap/snapd/16292
+sda                         8:0    0   64G  0 disk
+├─sda1                      8:1    0    1M  0 part
+├─sda2                      8:2    0  1.5G  0 part /boot
+└─sda3                      8:3    0 62.5G  0 part
+  └─ubuntu--vg-ubuntu--lv 253:0    0 31.3G  0 lvm  /
+sdb                         8:16   0  2.5G  0 disk
+├─sdb1                      8:17   0    2G  0 part
+└─sdb2                      8:18   0  511M  0 part
+sdc                         8:32   0  2.5G  0 disk
+├─sdc1                      8:33   0    2G  0 part
+└─sdc2                      8:34   0  511M  0 part
+</pre>
+6. mdadm -C /dev/md0 -l 1 -n 2 -x 0 /dev/sdb1 /dev/sdc1<br>
+7. mdadm -C /dev/md1 -l 0 -n 2 /dev/sdb2 /dev/sdc2<br>
+
+8. pvdisplay
+<pre>
+  "/dev/md0" is a new physical volume of "<2.00 GiB"
+  --- NEW Physical volume ---
+  PV Name               /dev/md0
+  VG Name
+  PV Size               <2.00 GiB
+  Allocatable           NO
+  PE Size               0
+  Total PE              0
+  Free PE               0
+  Allocated PE          0
+  PV UUID               iklQF9-aNkW-bO1F-PNhW-Kgiu-OXiy-vitgoL
+
+  "/dev/md1" is a new physical volume of "1018.00 MiB"
+  --- NEW Physical volume ---
+  PV Name               /dev/md1
+  VG Name
+  PV Size               1018.00 MiB
+  Allocatable           NO
+  PE Size               0
+  Total PE              0
+  Free PE               0
+  Allocated PE          0
+  PV UUID               0xquSL-Apbo-AsKc-tINb-bLmB-W3w4-UWvf0i
+</pre>  
+9. 
+<pre>
+root@vagrant:~# vgdisplay vg01
+  --- Volume group ---
+  VG Name               vg01
+  System ID
+  Format                lvm2
+  Metadata Areas        2
+  Metadata Sequence No  1
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                0
+  Cur LV                0
+  Open LV               0
+  Max PV                0
+  Cur PV                2
+  Act PV                2
+  VG Size               <2.99 GiB
+  PE Size               4.00 MiB
+  Total PE              765
+  Alloc PE / Size       0 / 0
+  Free  PE / Size       765 / <2.99 GiB
+  VG UUID               JemyQJ-UuL3-M6Ge-Cg6g-0IGK-Lmjh-0Q9TX9
+  
+  
+root@vagrant:~# pvdisplay /dev/md0 /dev/md1
+  --- Physical volume ---
+  PV Name               /dev/md0
+  VG Name               vg01
+  PV Size               <2.00 GiB / not usable 0
+  Allocatable           yes
+  PE Size               4.00 MiB
+  Total PE              511
+  Free PE               511
+  Allocated PE          0
+  PV UUID               iklQF9-aNkW-bO1F-PNhW-Kgiu-OXiy-vitgoL
+
+  --- Physical volume ---
+  PV Name               /dev/md1
+  VG Name               vg01
+  PV Size               1018.00 MiB / not usable 2.00 MiB
+  Allocatable           yes
+  PE Size               4.00 MiB
+  Total PE              254
+  Free PE               254
+  Allocated PE          0
+  PV UUID               0xquSL-Apbo-AsKc-tINb-bLmB-W3w4-UWvf0i
+  
+</pre>  
+10.
+<pre>
+root@vagrant:~# lvcreate vg01 -n lv01 -L 100M /dev/md1
+  Logical volume "lv01" created.
+root@vagrant:~# lvdisplay vg01
+  --- Logical volume ---
+  LV Path                /dev/vg01/lv01
+  LV Name                lv01
+  VG Name                vg01
+  LV UUID                PI8luf-P26e-eyAp-4Pcd-CnQx-Jh3Z-fW0sUx
+  LV Write Access        read/write
+  LV Creation host, time vagrant, 2022-07-18 16:03:56 +0000
+  LV Status              available
+  # open                 0
+  LV Size                100.00 MiB
+  Current LE             25
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     4096
+  Block device           253:1
+</preO  
+11.
+<pre>
+root@vagrant:~# mkfs.ext4 /dev/vg01/lv01
+mke2fs 1.45.5 (07-Jan-2020)
+Creating filesystem with 25600 4k blocks and 25600 inodes
+
+Allocating group tables: done
+Writing inode tables: done
+Creating journal (1024 blocks): done
+Writing superblocks and filesystem accounting information: done
+
+</pre>
+12.
+mkdir /tmp/lv01<br>
+mount /dev/vg01/lv01 /tmp/lv01<br>
+
+14.
+<pre>
+root@vagrant:~# lsblk
+NAME                      MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
+loop0                       7:0    0 67.2M  1 loop  /snap/lxd/21835
+loop1                       7:1    0 61.9M  1 loop  /snap/core20/1328
+loop2                       7:2    0 43.6M  1 loop  /snap/snapd/14978
+loop3                       7:3    0 61.9M  1 loop  /snap/core20/1518
+loop4                       7:4    0   47M  1 loop  /snap/snapd/16292
+loop5                       7:5    0 67.8M  1 loop  /snap/lxd/22753
+sda                         8:0    0   64G  0 disk
+├─sda1                      8:1    0    1M  0 part
+├─sda2                      8:2    0  1.5G  0 part  /boot
+└─sda3                      8:3    0 62.5G  0 part
+  └─ubuntu--vg-ubuntu--lv 253:0    0 31.3G  0 lvm   /
+sdb                         8:16   0  2.5G  0 disk
+├─sdb1                      8:17   0    2G  0 part
+│ └─md0                     9:0    0    2G  0 raid1
+└─sdb2                      8:18   0  511M  0 part
+  └─md1                     9:1    0 1018M  0 raid0
+    └─vg01-lv01           253:1    0  100M  0 lvm   /tmp/lv01
+sdc                         8:32   0  2.5G  0 disk
+├─sdc1                      8:33   0    2G  0 part
+│ └─md0                     9:0    0    2G  0 raid1
+└─sdc2                      8:34   0  511M  0 part
+  └─md1                     9:1    0 1018M  0 raid0
+    └─vg01-lv01           253:1    0  100M  0 lvm   /tmp/lv01
+
+</pre>
+15. 
+<pre>
+root@vagrant:/tmp/lv01# gzip -t ./test.gz
+root@vagrant:/tmp/lv01# echo $?
+0
+</pre>
+16. 
+<pre>
+root@vagrant:/tmp/lv01# pvmove -n /dev/vg01/lv01 /dev/md1 /dev/md0
+  /dev/md1: Moved: 28.00%
+  /dev/md1: Moved: 100.00%
+  
+</pre>
+17. mdadm --fail /dev/md0 /dev/sdc1
+
+<pre>
+root@vagrant:/tmp/lv01# mdadm --detail /dev/md0
+/dev/md0:
+           Version : 1.2
+     Creation Time : Mon Jul 18 15:22:55 2022
+        Raid Level : raid1
+        Array Size : 2094080 (2045.00 MiB 2144.34 MB)
+     Used Dev Size : 2094080 (2045.00 MiB 2144.34 MB)
+      Raid Devices : 2
+     Total Devices : 2
+       Persistence : Superblock is persistent
+
+       Update Time : Mon Jul 18 16:22:49 2022
+             State : clean, degraded
+    Active Devices : 1
+   Working Devices : 1
+    Failed Devices : 1
+     Spare Devices : 0
+
+Consistency Policy : resync
+
+              Name : vagrant:0  (local to host vagrant)
+              UUID : f5a7e1d9:e4cd6a1a:3121cd09:591af344
+            Events : 19
+
+    Number   Major   Minor   RaidDevice State
+       0       8       17        0      active sync   /dev/sdb1
+       -       0        0        1      removed
+
+       1       8       33        -      faulty   /dev/sdc1
+</pre>	   
+18.	  
+<pre>
+root@vagrant:/tmp/lv01# dmesg | grep md/raid
+......
+[ 7128.198063] md/raid1:md0: Disk failure on sdc1, disabling device.
+               md/raid1:md0: Operation continuing on 1 devices.
+			  
+</pre>			  
+19.
+<pre>
+root@vagrant:/tmp/lv01# gzip -t ./test.gz
+root@vagrant:/tmp/lv01# echo $?
+0
+</pre>
 ## 3.6 Компьютерные сети, лекция 1 - Вячеслав Медведев
 
 1. Вернулся код 301<br>
