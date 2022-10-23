@@ -1,4 +1,4 @@
-resource "yandex_compute_instance" "vms" {
+resource "yandex_compute_instance" "vm-1" {
   name = "${terraform.workspace}-vm${count.index}"
 
   count = local.count_map[terraform.workspaces]
