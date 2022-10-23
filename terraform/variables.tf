@@ -13,4 +13,9 @@ locals {
         stage = 1
         prod = 2
     }
+
+    vm_2_instances = {
+        "web" = [2, 4]
+        "db" = [4, 8]
+    }
 }
