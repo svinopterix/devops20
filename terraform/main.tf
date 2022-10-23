@@ -24,6 +24,34 @@ resource "yandex_compute_instance" "vm-1" {
   }
 }
 
+resource "yandex_compute_instance" "vm-2" {
+
+  for_each = local.vm_2_instances
+
+  name = "${terraform.workspace}-vm-${each.key}"
+
+
+  resources {
+    cores  = each.value[0]
+    memory = each.value[1]
+  }
+
+  boot_disk {
+    initialize_params {
+      image_id = "fd81hgrcv6lsnkremf32"
+    }
+  }
+
+  network_interface {
+    subnet_id = yandex_vpc_subnet.subnet-1.id
+    nat       = true
+  }
+
+  metadata = {
+    ssh-keys = "vagrant:${file("~/.ssh/id_rsa.pub")}"
+  }
+}
+
 resource "yandex_vpc_network" "network-1" {
   name = "network1"
 }
