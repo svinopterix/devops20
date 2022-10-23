@@ -26,7 +26,7 @@ resource "yandex_compute_instance" "vm-1" {
 
 resource "yandex_compute_instance" "vm-2" {
 
-  for_each = local.vm_2_instances
+  for_each = local.vm_2_instances[terraform.workspace]
 
   name = "${terraform.workspace}-vm-${each.key}"
 

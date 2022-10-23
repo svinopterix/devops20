@@ -15,7 +15,15 @@ locals {
     }
 
     vm_2_instances = {
-        "web" = [2, 4]
-        "db" = [4, 8]
+        prod = {
+            "web1" = [2, 4]
+            "web2" = [2, 4]
+            "db" = [4, 8]
+        }
+
+        stage = {
+            "web" = [2, 2]
+            "db" = [2, 4]
+        }
     }
 }
