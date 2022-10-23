@@ -1,7 +1,7 @@
 resource "yandex_compute_instance" "vm-1" {
   name = "${terraform.workspace}-vm${count.index}"
 
-  count = local.count_map[terraform.workspaces]
+  count = local.count_map[terraform.workspace]
 
   resources {
     cores  = local.cores_map[terraform.workspace]
