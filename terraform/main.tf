@@ -1,9 +1,11 @@
-resource "yandex_compute_instance" "vm-1" {
-  name = "tfvm01"
+resource "yandex_compute_instance" "vms" {
+  name = "${terraform.workspace}-vm${count.index}"
+
+  count = local.count_map[terraform.workspaces]
 
   resources {
-    cores  = 2
-    memory = 2
+    cores  = local.cores_map[terraform.workspace]
+    memory = local.memory_map[terraform.workspace]
   }
 
   boot_disk {
