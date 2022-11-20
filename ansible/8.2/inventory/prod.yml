@@ -1,0 +1,7 @@
+---
+elasticsearch:
+  hosts:
+    devops20-vm01:
+      ansible_connection: ssh
+      ansible_user: vagrant
+      ansible_host: 192.168.56.3
