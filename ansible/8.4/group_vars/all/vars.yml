@@ -1,0 +1,7 @@
+---
+java_jdk_version: 11.0.11
+java_oracle_jdk_package: jdk-11.0.11_linux-x64_bin.tar.gz
+
+yc_token: "y0_AgAAAAARXFVvAATuwQAAAADOUEADTpB7egonRDCX1012P8C6ZIkONww"
+subnet_id: "e9bqs39qbsl1p3fp7cim"
+folder_id: "b1g120ok8eob761pks4v"
