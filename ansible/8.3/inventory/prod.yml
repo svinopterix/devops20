@@ -1,4 +1,7 @@
 ---
+# vector
+# lighthouse
+
 elasticsearch:
   hosts:
     devops20-vm01:
