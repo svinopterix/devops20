@@ -1,0 +1,5 @@
+---
+elastic_version: "7.10.1"
+elastic_home: "/opt/elastic/{{ elastic_version }}"
+vector_version: "0.25.1"
+vector_home: "/opt/vector"
