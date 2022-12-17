@@ -1,5 +1,18 @@
 ---
 clickhouse:
   hosts:
-    clickhouse-01:
-      ansible_host: <IP_here>
+    dv20-clickhouse:
+      ansible_host: 158.160.54.39
+      ansible_user: ubuntu
+
+vector:
+  hosts:
+    dv20-vector:
+      ansible_host: 158.160.54.28
+      ansible_user: ubuntu
+
+lighthouse:
+  hosts:
+    dv20-lighthouse:
+      ansible_host: 158.160.32.167
+      ansible_user: ubuntu
