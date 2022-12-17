@@ -1,2 +1,2 @@
 ---
-lighthouse_home: "/data/www"
+lighthouse_home: "/var/www/html"

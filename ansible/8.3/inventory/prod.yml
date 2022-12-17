@@ -2,17 +2,17 @@
 clickhouse:
   hosts:
     dv20-clickhouse:
-      ansible_host: 158.160.54.39
-      ansible_user: ubuntu
+      ansible_host: 158.160.38.117
+      ansible_user: centos
 
 vector:
   hosts:
     dv20-vector:
-      ansible_host: 158.160.54.28
-      ansible_user: ubuntu
+      ansible_host: 158.160.48.88
+      ansible_user: centos
 
 lighthouse:
   hosts:
     dv20-lighthouse:
-      ansible_host: 158.160.32.167
-      ansible_user: ubuntu
+      ansible_host: 158.160.44.242
+      ansible_user: centos
