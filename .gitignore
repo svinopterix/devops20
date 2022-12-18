@@ -3,3 +3,5 @@
 /venv
 /.idea
 /vagrant/.vagrant
+ansible/8.3/terraform/terraform.tfstate
+ansible/8.3/terraform/terraform.tfstate.backup
