@@ -1,0 +1,47 @@
+ Vagrant.configure("2") do |config|
+
+	config.vm.define "master" do |master|
+		master.vm.box = "bento/centos-7"
+
+		master.vm.network "forwarded_port", guest: 443, host: 4443
+		master.vm.network "private_network", ip: "192.168.56.4"
+		
+		master.vm.provider "virtualbox" do |v|
+			v.memory = 2048
+			v.cpus = 2
+			v.name = "jenkins-master"
+		end	
+
+		master.vm.provision "shell" do |s|
+			ssh_pub_key = File.readlines("/home/vmedvedev/.ssh/id_rsa.pub").first.strip
+			s.inline = <<-SHELL
+			echo #{ssh_pub_key} >> /home/vagrant/.ssh/authorized_keys
+#			sudo sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
+#			sudo sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*						
+			SHELL
+		end		
+	end
+
+	config.vm.define "agent" do |agent|
+		agent.vm.box = "bento/centos-8"
+
+		agent.vm.network "forwarded_port", guest: 8080, host: 8080
+		agent.vm.network "private_network", ip: "192.168.56.5"
+
+		agent.vm.provider "virtualbox" do |v|
+			v.memory = 2048
+			v.cpus = 2
+			v.name = "jenkins-agent"
+		end	
+
+		agent.vm.provision "shell" do |s|
+			ssh_pub_key = File.readlines("/home/vmedvedev/.ssh/id_rsa.pub").first.strip
+			s.inline = <<-SHELL
+			echo #{ssh_pub_key} >> /home/vagrant/.ssh/authorized_keys
+			sudo sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
+			sudo sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
+			SHELL
+		end				
+	end	
+
+ end
