@@ -1,0 +1,33 @@
+pipeline {
+    agent {
+        label 'ansible'
+    }
+
+    stages {
+        stage('clone repo') {
+            steps {
+                sh 'git clone https://github.com/svinopterix/devops20-vector-role'
+            }
+        }
+        
+        stage('install molecule') {
+            steps {
+                sh 'python3 -m pip install --user "molecule[docker]"'
+            }
+        }
+        
+        stage('run tests') {
+            steps {
+                dir('./devops20-vector-role') {
+                    sh 'molecule test'   
+                }
+            }
+        }
+        
+        stage('cleanup') {
+            steps {
+                deleteDir()
+            }
+        }
+    }
+}
