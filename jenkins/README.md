@@ -1,9 +1,9 @@
 # Домашнее задание к занятию "10.Jenkins"
 
 ## Декларативный pipeline
-Разработанный декларативный пайплайн в файле [Jenkinsfile]
+Разработанный декларативный пайплайн в файле [Jenkinsfile](https://github.com/svinopterix/devops20/blob/main/jenkins/Jenkinsfile)
 
 ## Скриптовый pipeline
-[ScriptedJenkinsfile]<br>
+[ScriptedJenkinsfile](https://github.com/svinopterix/devops20/blob/main/jenkins/ScriptedJenkinsfile)<br>
 В задании было "исправить ошибки". Ошибка в ходе выполнения была одна: Ansible требовал пароль для sudo. Я добавил пользователю jenkins возможность делать sudo без пароля, после чего сборка отрабатывает без ошибок.<br>
 Добавил параметр запуска job: prod_run типа Boolean, значение по умолчанию False. При prod_run==False плейбук запускается с ключами --check --diff
