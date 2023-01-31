@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: svinopterix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ppp-deployment
+  namespace: svinopterix
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ppp
+  template:
+    metadata:
+      namespace: svinopterix
+      labels:
+        app: ppp
+    spec:
+      containers:
+        - name: ppp
+          image: cr.yandex/d20-registry/ppp:1.0.0
+          imagePullPolicy: Always
