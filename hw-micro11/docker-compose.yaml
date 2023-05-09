@@ -2,13 +2,16 @@ volumes:
   data:
   prometheus-data:
   grafana_data:
+  prom_data:
+  elasticsearch_data:  
 
 services:
   # S3 minio
   storage:
     image: minio/minio:latest
+    container_name: s3
     command: server /data
-    restart: always
+    restart: always    
     expose: 
       - 9000
     environment:
@@ -22,9 +25,16 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
+    logging: &logging_config
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:50000"
+        gelf-compression-type: none
 
   createbuckets:
     image: minio/mc
+    container_name: createbuckets
+    logging: *logging_config
     depends_on:
       - storage
     restart: on-failure
@@ -34,11 +44,13 @@ services:
       /usr/bin/mc mb --ignore-existing storage/${Storage_Bucket:-data} &&
       /usr/bin/mc anonymous set download storage/${Storage_Bucket:-data} &&
       exit 0;
-      "
+      "   
 
   # uploader
   uploader:
     build: ./uploader
+    container_name: uploader
+    logging: *logging_config    
     depends_on:
       - storage
       - createbuckets
@@ -50,11 +62,13 @@ services:
       S3_PORT: 9000
       S3_ACCESS_KEY: ${Storage_AccessKey:-STORAGE_ACCESS_KEY}
       S3_ACCESS_SECRET: ${Storage_Secret:-STORAGE_SECRET_KEY}
-      S3_BUCKET: ${Storage_Bucket:-data}
-  
+      S3_BUCKET: ${Storage_Bucket:-data}    
+
   # authenticator
   security:
     build: ./security
+    container_name: security
+    logging: *logging_config    
     expose: 
       - 3000
     environment:
@@ -63,6 +77,8 @@ services:
   # gateway
   gateway:
     image: nginx:alpine
+    container_name: gateway
+    logging: *logging_config    
     volumes:
       - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
@@ -74,35 +90,47 @@ services:
 
   # prometheus
   prometheus:
+    profiles:
+      - monitoring
     image: prom/prometheus
     container_name: prometheus
+    logging: *logging_config   
     command: 
       - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--log.level=debug"
+      - "--web.enable-lifecycle"
     restart: unless-stopped
     ports:
-      - "9090:9000"
+      - "9000:9090"
     volumes:
       - ./prometheus:/etc/prometheus
-      - prom_data:/prometheus
+      - prom_data:/prometheus   
 
   # grafana
-  graphana:
+  grafana:
+    profiles:
+      - monitoring  
     image: grafana/grafana
-    container_name: graphana
+    container_name: grafana
+    logging: *logging_config
     ports: 
       - "8081:3000"
     depends_on:
       - prometheus      
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=qwerty123456
+      - GF_SECURITY_ADMIN_USER=${GF_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_ADMIN_PASSWORD}
     volumes:
-      - ./grafana:/etc/grafana/provisioning/datasources
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/etc-dashboards:/etc/dashboards
 
   # elasticsearch
   elasticsearch:
+    profiles:
+      - logging
     container_name: elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
     environment:
       - xpack.security.enabled=false
       - "discovery.type=single-node"
@@ -110,9 +138,33 @@ services:
       - elasticsearch_data:/usr/share/elasticsearch/data      
     ports:
       - 9200:9200
+    restart: unless-stopped
   
+  # logstash
+  logstash:
+    profiles:
+      - logging  
+    image: docker.elastic.co/logstash/logstash:${LOGSTASH_VERSION}
+    container_name: logstash
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
+    ports:
+      - 5044:5044
+      - 50000:50000/tcp
+      - 50000:50000/udp
+      - 9600:9600
+    environment:
+      LS_JAVA_OPTS: -Xms256m -Xmx256m
+      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
   # kibana
   kibana:
+    profiles:
+      - logging  
     container_name: kibana
     image: docker.elastic.co/kibana/kibana:7.11.0
     environment:
@@ -121,8 +173,3 @@ services:
       - elasticsearch
     ports:
       - 8082:5601
-
-volumes:
-  prom_data:
-  data:
-  elasticsearch_data:
