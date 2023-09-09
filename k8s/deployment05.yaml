@@ -1,0 +1,64 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shared-volume-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shared-volume-deployment
+  template:
+    metadata:
+      labels:
+        app: shared-volume-deployment
+    spec:
+      containers:
+      - name: loggen
+        image: svinopterix/loggen:v1.1
+        env:
+        - name: LOG_FILE
+          value: "/shared/logfile.log"
+        volumeMounts:
+        - mountPath: /shared
+          name: shared-volume
+      - name: multitool
+        image: wbitt/network-multitool:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: HTTP_PORT
+          value: "8080"  
+        volumeMounts:
+        - name: shared-volume
+          mountPath: /shared          
+      volumes:
+      - name: shared-volume
+        persistentVolumeClaim:
+          claimName: nfs-pvc
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-pvc
+spec:
+  storageClassName: nfs-csi
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: multitool-service
+spec:
+  selector:
+    app: shared-volume-deployment
+  ports:
+    - name: multitool
+      protocol: TCP
+      port: 9002
+      targetPort: 8080
